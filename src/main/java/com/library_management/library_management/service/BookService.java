@@ -2,11 +2,13 @@ package com.library_management.library_management.service;
 
 import com.library_management.library_management.dao.BookDao;
 import com.library_management.library_management.model.Book;
+import com.library_management.library_management.projection.BookProjection;
 import com.library_management.library_management.utility.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.swing.tree.ExpandVetoException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,4 +35,21 @@ public class BookService {
             return response;
         }
     }
+
+    public ApiResponse<List<BookProjection>> getAllBooks(){
+        ApiResponse<List<BookProjection>> response = new ApiResponse<>();
+        try{
+            List<BookProjection> allBooks = bookDao.getBooks();
+            response.setSuccess(true);
+            response.setMessage("List Of All Books");
+            response.setData(allBooks);
+            return response;
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+
+    }
+
 }

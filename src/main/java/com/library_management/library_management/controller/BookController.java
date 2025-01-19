@@ -1,6 +1,7 @@
 package com.library_management.library_management.controller;
 
 import com.library_management.library_management.model.Book;
+import com.library_management.library_management.projection.BookProjection;
 import com.library_management.library_management.service.BookService;
 import com.library_management.library_management.utility.ApiResponse;
 import jakarta.validation.Valid;
@@ -8,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -38,4 +38,21 @@ public class BookController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/allBooks")
+    public ResponseEntity<ApiResponse<List<BookProjection>>> getAllBooks(){
+        ApiResponse<List<BookProjection>> response = bookService.getAllBooks();
+        try{
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
 }
