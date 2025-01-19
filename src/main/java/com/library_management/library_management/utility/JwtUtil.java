@@ -32,7 +32,7 @@ public class JwtUtil {
             .setSubject(username)
             .claim("is_admin",is_admin)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10 * 10))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
             .compact();
     }
