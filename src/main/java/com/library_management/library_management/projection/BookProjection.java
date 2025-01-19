@@ -5,4 +5,5 @@ public interface BookProjection {
     Integer getBookId();
     String getBookName();
     Integer getCatId();
+
 }
