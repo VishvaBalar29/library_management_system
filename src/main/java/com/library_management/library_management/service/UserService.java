@@ -89,4 +89,8 @@ public class UserService {
                 return response;
         }
 
+        public String IssueBook(){
+            return "";
+        }
+
 }
