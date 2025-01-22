@@ -61,15 +61,11 @@ public class UserService {
                        boolean is_admin = existingUser.get().getIs_admin() == null ? false : existingUser.get().getIs_admin();
                        String token = jwtUtil.generateToken(existingUser.get().getUsername(),is_admin);
                        System.out.println("Token : " + token);
-                       System.out.println("\n");
-                       System.out.println("\n");
-                       System.out.println("\n");
-                       System.out.println("\n");
-                       System.out.println("\n");
                        HashMap<String,String> body = new HashMap<>();
                        response.setSuccess(true);
                        body.put("username", existingUser.get().getUsername());
                        body.put("token",token);
+                       body.put("email",existingUser.get().getEmail());
                        response.setData(body);
                        return response;
                 } catch (Exception e) {
@@ -92,4 +88,5 @@ public class UserService {
                 }
                 return response;
         }
+
 }

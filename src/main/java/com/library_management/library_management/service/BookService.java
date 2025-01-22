@@ -49,7 +49,48 @@ public class BookService {
             response.setMessage(e.getMessage());
             return response;
         }
-
     }
+
+    public ApiResponse<String> deleteBook(Integer id){
+        ApiResponse<String> response = new ApiResponse<>();
+        try{
+            Optional<Book> existingBook = bookDao.findById(id);
+            if(!existingBook.isPresent()){
+                throw new Exception("Given Id is not Exist");
+            }
+            bookDao.deleteById(id);
+            response.setSuccess(true);
+            response.setMessage("Book deleted successfully");
+            return response;
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
+
+    public ApiResponse<String> updateBook(Book book, Integer id){
+        ApiResponse<String> response = new ApiResponse<>();
+        try{
+            Optional<Book> existingBook = bookDao.findById(id);
+            if(!existingBook.isPresent()){
+                throw new Exception("Given Id is not Exist");
+            }
+            if(book.getBookName().equals("")){
+                throw new Exception("Please enter valid Book name");
+            }
+            existingBook.get().setBookName(book.getBookName());
+            existingBook.get().setCategory(book.getCategory());
+            bookDao.save(existingBook.get());
+            response.setSuccess(true);
+            response.setMessage("Book Updated Successfully");
+            return response;
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
+
 
 }

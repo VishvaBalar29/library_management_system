@@ -66,8 +66,6 @@ public class CategoryController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         catch(Exception e){
-            response.setSuccess(false);
-            response.setMessage(e.getMessage());
             return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
         }
     }

@@ -78,4 +78,15 @@ public class UserController {
                 return new ResponseEntity<>(response,HttpStatus.UNAUTHORIZED);
             }
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(){
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("You're logout");
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+
+
 }

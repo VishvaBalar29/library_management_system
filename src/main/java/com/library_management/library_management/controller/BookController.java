@@ -54,5 +54,35 @@ public class BookController {
         }
     }
 
+    @DeleteMapping("admin/deleteBook/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteBook(@PathVariable Integer id){
+        ApiResponse<String> response = bookService.deleteBook(id);
+        try{
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping("admin/updateBook/{id}")
+    public ResponseEntity<ApiResponse<String>> updateBook(@PathVariable Integer id,@Valid @RequestBody Book book,BindingResult result){
+        ApiResponse<String> response = bookService.updateBook(book,id);
+        try{
+            if(result.hasErrors()){
+                response.setSuccess(false);
+                response.setMessage(result.getAllErrors().get(0).getDefaultMessage());
+                throw new Exception(response.getMessage());
+            }
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }
