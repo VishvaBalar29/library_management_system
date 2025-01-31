@@ -44,6 +44,35 @@ public class BookIssueReturnController {
         }
     }
 
+    @PatchMapping("/admin/approveRequest/{adminId}/{reqId}")
+    public ResponseEntity<ApiResponse<String>> approveRequest(@PathVariable Integer adminId,@PathVariable Integer reqId){
+        ApiResponse<String> response = bookIssueReturnService.approveRequest(adminId,reqId);
+        try{
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/getRequest/{id}")
+    public ResponseEntity<ApiResponse<List<BookIssueReturnProjection>>> getSingleUserRequest(@PathVariable Integer id){
+        ApiResponse<List<BookIssueReturnProjection>> response = bookIssueReturnService.getSingleUserRequest(id);
+        try{
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
 
 
 

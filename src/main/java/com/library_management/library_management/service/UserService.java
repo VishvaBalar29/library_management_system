@@ -64,6 +64,7 @@ public class UserService {
                        HashMap<String,String> body = new HashMap<>();
                        response.setSuccess(true);
                        body.put("username", existingUser.get().getUsername());
+                       body.put("id",existingUser.get().getId().toString());
                        body.put("token",token);
                        body.put("email",existingUser.get().getEmail());
                        response.setData(body);

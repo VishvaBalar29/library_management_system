@@ -11,8 +11,10 @@ import com.library_management.library_management.utility.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class BookIssueReturnService {
@@ -25,6 +27,13 @@ public class BookIssueReturnService {
 
     @Autowired
     UserDao userDao;
+
+    public enum State{
+        PENDING,
+        REJECT,
+        ACCEPTED,
+        RETURN
+    }
 
 
     public ApiResponse<String> issueBook(BookIssueReturn bookIssueReturn){
@@ -77,6 +86,54 @@ public class BookIssueReturnService {
             return response;
         }
     }
+
+
+    //    {{url}}/user/admin/approveRequest/{{id}}/7
+    public ApiResponse<String> approveRequest(Integer adminId,Integer reqId){
+        ApiResponse<String> response = new ApiResponse<>();
+        try{
+            Optional<BookIssueReturn> existingReq = bookIssueReturnDao.findById(reqId);
+            if(!existingReq.isPresent()){
+                throw new Exception("Given request Id is not exist");
+            }
+            Optional<User> currAdmin = userDao.findById(adminId);
+            existingReq.get().setAdmin(currAdmin.get());
+            existingReq.get().setState(BookIssueReturn.State.ACCEPTED);
+            existingReq.get().setApprovalDate(LocalDate.now());
+            existingReq.get().setReturnDate(LocalDate.now().plusDays(10));
+            bookIssueReturnDao.save(existingReq.get());
+            response.setSuccess(true);
+            response.setMessage("Request Approved");
+            return response;
+        }
+        catch(Exception e){
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
+
+
+    public ApiResponse<List<BookIssueReturnProjection>> getSingleUserRequest(Integer id) {
+        ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
+        try{
+            Optional<User> existingUser = userDao.findById(id);
+            if(!existingUser.isPresent()){
+                throw new Exception("User doesn't exist");
+            }
+            Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserRequest(id);
+            response.setSuccess(true);
+            response.setMessage("All Request Fetched");
+            response.setData(allReq.orElseThrow(()-> new Exception("Occur error while fetching requests")));
+            return response;
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
+
+
 
 
 }
