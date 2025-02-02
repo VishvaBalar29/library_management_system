@@ -11,4 +11,5 @@ public class UserInfo {
 
     private String username;
     private boolean is_admin;
+    private int userId;
 }

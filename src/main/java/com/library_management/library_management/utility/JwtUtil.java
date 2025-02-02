@@ -27,10 +27,12 @@ public class JwtUtil {
         SECRET_KEY = Keys.hmacShaKeyFor(JWT_KEY.getBytes(StandardCharsets.UTF_8));
     }    
 
-    public String generateToken(String username,boolean is_admin){
+    public String generateToken(String username,boolean is_admin,int userId){
         return Jwts.builder()
             .setSubject(username)
             .claim("is_admin",is_admin)
+            .claim("userId",userId)
+
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10 * 10))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
@@ -38,7 +40,7 @@ public class JwtUtil {
     }
 
     public UserInfo extractUserData(String userToken) {
-        UserInfo userInfo = new UserInfo(extractUsername(userToken), extractClaims(userToken).get("is_admin",Boolean.class));
+        UserInfo userInfo = new UserInfo(extractUsername(userToken), extractClaims(userToken).get("is_admin",Boolean.class),extractClaims(userToken).get("userId",Integer.class));
         return userInfo;
     }
 

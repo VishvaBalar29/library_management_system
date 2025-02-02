@@ -36,24 +36,25 @@ public class BookIssueReturnService {
     }
 
 
-    public ApiResponse<String> issueBook(BookIssueReturn bookIssueReturn){
+    public ApiResponse<String> issueBook(Integer bookId,Integer userId){
         ApiResponse<String> response = new ApiResponse<>();
         try{
-            Optional<Book> existingBook = bookDao.findById(bookIssueReturn.getBook().getBookId());
+            Optional<Book> existingBook = bookDao.findById(bookId);
             if(!existingBook.isPresent()){
                 throw new Exception("Given Book is not found");
             }
-            Optional<User> existingUser = userDao.findById(bookIssueReturn.getUser().getId());
-            if(!existingUser.isPresent()){
-                throw new Exception("Given User is not found");
-            }
-            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookIssueReturn.getBook().getBookId(), bookIssueReturn.getUser().getId());
+            Optional<User> existingUser = userDao.findById(userId);
+            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookId,userId);
             if(existingIssueBook.isPresent()){
                 throw new Exception("This book is already in pending request");
             }
+            BookIssueReturn bookIssueReturn = new BookIssueReturn();
+            bookIssueReturn.setBook(existingBook.get());
+            bookIssueReturn.setUser(existingUser.get());
+            bookIssueReturn.setState(BookIssueReturn.State.PENDING);
+            bookIssueReturnDao.save(bookIssueReturn);
             response.setSuccess(true);
             response.setMessage("Book Issued Successfully...");
-            bookIssueReturnDao.save(bookIssueReturn);
             return response;
         } catch (Exception e) {
             response.setSuccess(false);

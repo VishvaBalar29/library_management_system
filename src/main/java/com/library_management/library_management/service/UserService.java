@@ -59,7 +59,7 @@ public class UserService {
                                 throw new Exception("Invalid Credentials");
                        }
                        boolean is_admin = existingUser.get().getIs_admin() == null ? false : existingUser.get().getIs_admin();
-                       String token = jwtUtil.generateToken(existingUser.get().getUsername(),is_admin);
+                       String token = jwtUtil.generateToken(existingUser.get().getUsername(),is_admin,existingUser.get().getId());
                        System.out.println("Token : " + token);
                        HashMap<String,String> body = new HashMap<>();
                        response.setSuccess(true);

@@ -24,7 +24,11 @@ public interface BookIssueReturnDao extends JpaRepository<BookIssueReturn, Integ
     @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return where state = :Status",nativeQuery = true)
     Optional<List<BookIssueReturnProjection>> getFilterRequest(String Status);
 
+
     @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return where user_id = :id",nativeQuery = true)
     Optional<List<BookIssueReturnProjection>> getSingleUserRequest(Integer id);
+
+
+
 
 }
