@@ -2,7 +2,6 @@ package com.library_management.library_management.dao;
 
 import com.library_management.library_management.model.BookIssueReturn;
 import com.library_management.library_management.projection.BookIssueReturnProjection;
-import com.library_management.library_management.projection.CategoryProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,16 +18,20 @@ public interface BookIssueReturnDao extends JpaRepository<BookIssueReturn, Integ
 
     @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return",nativeQuery = true)
     Optional<List<BookIssueReturnProjection>> getAllRequest();
-
+//findByUserIdAndBookId
 
     @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return where state = :Status",nativeQuery = true)
     Optional<List<BookIssueReturnProjection>> getFilterRequest(String Status);
-
+//find
 
     @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return where user_id = :id",nativeQuery = true)
     Optional<List<BookIssueReturnProjection>> getSingleUserRequest(Integer id);
+    
+    
+
+    @Query(value = "SELECT id, book_id, user_id, admin_id, issue_date, approval_date, return_date, user_return_date, state from book_issue_return where user_id = :id and state = :status",nativeQuery = true)
+    Optional<List<BookIssueReturnProjection>> getSingleUserFilterRequest(Integer id,String status);
 
 
-
-
+    Optional<List<BookIssueReturn>> findByUserId(Integer userId);
 }

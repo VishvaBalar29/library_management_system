@@ -20,6 +20,8 @@ public class BookIssueReturnController {
     @Autowired
     BookIssueReturnService bookIssueReturnService;
 
+
+
     @GetMapping("/issueBook/{bookId}")
     public ResponseEntity<ApiResponse<String>> issueBook(HttpServletRequest request , @PathVariable Integer bookId){
         ApiResponse<String> response = new ApiResponse<>();
@@ -39,10 +41,30 @@ public class BookIssueReturnController {
         }
     }
 
-    @GetMapping("/admin/allRequest")
-    public ResponseEntity<ApiResponse<List<BookIssueReturnProjection>>> getAllPendingRequest(@RequestParam(required = false) String status){
-        ApiResponse<List<BookIssueReturnProjection>> response = bookIssueReturnService.getAllPendingRequest(status);
+
+    @GetMapping("/getRequest")
+    public ResponseEntity<ApiResponse<List<BookIssueReturn>>> getSingleUserRequest(HttpServletRequest request,@RequestParam(required=false) String status){
+        ApiResponse<List<BookIssueReturn>> response = new ApiResponse<>();
         try{
+            UserInfo userInfo = (UserInfo)request.getAttribute("userData");
+            response = bookIssueReturnService.getSingleUserRequest(userInfo.getUserId(),status);
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+    @GetMapping("/admin/allRequest")
+    public ResponseEntity<ApiResponse<List<BookIssueReturnProjection>>> getAllPendingRequest(HttpServletRequest request,@RequestParam(required = false) String status){
+        ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
+        try{
+            UserInfo userInfo = (UserInfo) request.getAttribute("userData");
+            response = bookIssueReturnService.getAllRequest(userInfo.getUserId(),status);
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());
             }
@@ -52,25 +74,13 @@ public class BookIssueReturnController {
         }
     }
 
-    @PatchMapping("/admin/approveRequest/{adminId}/{reqId}")
-    public ResponseEntity<ApiResponse<String>> approveRequest(@PathVariable Integer adminId,@PathVariable Integer reqId){
-        ApiResponse<String> response = bookIssueReturnService.approveRequest(adminId,reqId);
-        try{
-            if(!response.isSuccess()){
-                throw new Exception(response.getMessage());
-            }
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }
-        catch(Exception e){
-            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
-        }
 
-    }
-
-    @GetMapping("/getRequest/{id}")
-    public ResponseEntity<ApiResponse<List<BookIssueReturnProjection>>> getSingleUserRequest(@PathVariable Integer id){
-        ApiResponse<List<BookIssueReturnProjection>> response = bookIssueReturnService.getSingleUserRequest(id);
+    @PatchMapping("/admin/approveRequest/{reqId}")
+    public ResponseEntity<ApiResponse<String>> approveRequest(HttpServletRequest httpServletRequest,@PathVariable Integer reqId){
+        ApiResponse<String> response = new ApiResponse<>();
         try{
+            UserInfo userInfo = (UserInfo) httpServletRequest.getAttribute("userData");
+            response = bookIssueReturnService.approveRequest(userInfo.getUserId(), reqId);
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());
             }
@@ -80,6 +90,9 @@ public class BookIssueReturnController {
             return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
         }
     }
+
+
+
 
 
 

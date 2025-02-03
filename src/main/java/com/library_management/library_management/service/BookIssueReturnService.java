@@ -63,11 +63,44 @@ public class BookIssueReturnService {
         }
     }
 
+    public ApiResponse<List<BookIssueReturn>> getSingleUserRequest(Integer userId,String status) {
+        ApiResponse<List<BookIssueReturn>> response = new ApiResponse<>();
+        try{
+            Optional<User> existingUser = userDao.findById(userId);
+            if(status == null || status.isEmpty()){
+                response.setMessage("null");
+//                Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserRequest(userId);
+                Optional<List<BookIssueReturn>> allReq = bookIssueReturnDao.findByUserId(userId);
 
-    //    {{url}}/user/admin/allRequest?status=PENDING
-    public ApiResponse<List<BookIssueReturnProjection>> getAllPendingRequest(String status){
+                response.setData(allReq.orElseThrow(()->new Exception("No Request Found")));
+            }
+            else{
+                try {
+                    State.valueOf(status.toUpperCase());
+                } catch (Exception e) {
+                    throw new Exception("Invalid status");
+                }
+//                Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserFilterRequest(userId,status.toUpperCase());
+//                response.setData(allReq.orElseThrow(()->new Exception("No Request Found")));
+            }
+
+            response.setSuccess(true);
+            response.setMessage("All Request Fetched");
+            return response;
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
+
+    public ApiResponse<List<BookIssueReturnProjection>> getAllRequest(Integer userId,String status){
         ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
         try{
+            Optional<User> user = userDao.findById(userId);
+            if(!user.get().getIs_admin()){
+                throw new Exception("You're not Admin");
+            }
             if(status.equals("")){
                 response.setMessage("null");
                 Optional<List<BookIssueReturnProjection>> allRequest = bookIssueReturnDao.getAllRequest();
@@ -88,16 +121,21 @@ public class BookIssueReturnService {
         }
     }
 
-
-    //    {{url}}/user/admin/approveRequest/{{id}}/7
-    public ApiResponse<String> approveRequest(Integer adminId,Integer reqId){
+    public ApiResponse<String> approveRequest(Integer userId,Integer reqId){
         ApiResponse<String> response = new ApiResponse<>();
         try{
+            Optional<User> user = userDao.findById(userId);
+            if(!user.get().getIs_admin()){
+                throw new Exception("You're not Admin");
+            }
             Optional<BookIssueReturn> existingReq = bookIssueReturnDao.findById(reqId);
             if(!existingReq.isPresent()){
                 throw new Exception("Given request Id is not exist");
             }
-            Optional<User> currAdmin = userDao.findById(adminId);
+            if(existingReq.get().getState() != BookIssueReturn.State.PENDING){
+                throw new Exception("Given request is not in PENDING state...");
+            }
+            Optional<User> currAdmin = userDao.findById(userId);
             existingReq.get().setAdmin(currAdmin.get());
             existingReq.get().setState(BookIssueReturn.State.ACCEPTED);
             existingReq.get().setApprovalDate(LocalDate.now());
@@ -115,24 +153,6 @@ public class BookIssueReturnService {
     }
 
 
-    public ApiResponse<List<BookIssueReturnProjection>> getSingleUserRequest(Integer id) {
-        ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
-        try{
-            Optional<User> existingUser = userDao.findById(id);
-            if(!existingUser.isPresent()){
-                throw new Exception("User doesn't exist");
-            }
-            Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserRequest(id);
-            response.setSuccess(true);
-            response.setMessage("All Request Fetched");
-            response.setData(allReq.orElseThrow(()-> new Exception("Occur error while fetching requests")));
-            return response;
-        } catch (Exception e) {
-            response.setSuccess(false);
-            response.setMessage(e.getMessage());
-            return response;
-        }
-    }
 
 
 
