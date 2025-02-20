@@ -41,8 +41,8 @@ public class BookController {
     }
 
     @GetMapping("/allBooks")
-    public ResponseEntity<ApiResponse<List<BookProjection>>> getAllBooks(){
-        ApiResponse<List<BookProjection>> response = bookService.getAllBooks();
+    public ResponseEntity<ApiResponse<List<Book>>> getAllBooks(){
+        ApiResponse<List<Book>> response = bookService.getAllBooks();
         try{
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());

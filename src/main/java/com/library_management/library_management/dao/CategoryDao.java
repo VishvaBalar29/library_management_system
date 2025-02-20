@@ -15,6 +15,5 @@ public interface CategoryDao extends JpaRepository<Category, Integer> {
 
     Optional<Category> findByCategoryName(String categoryName);
 
-    @Query(value = "SELECT cat_id as CatId,category_name as CategoryName FROM category",nativeQuery = true)
-    Optional<List<CategoryProjection>> getAllCategory();
+
 }

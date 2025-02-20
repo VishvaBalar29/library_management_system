@@ -15,6 +15,7 @@ public class FilterConfig {
         registrationBean.setFilter(jwtFilter);
         registrationBean.addUrlPatterns("/user/admin/*");
         registrationBean.addUrlPatterns("/book-issue/*");
+        registrationBean.addUrlPatterns("/admin/*");
         return registrationBean;
     }
 }

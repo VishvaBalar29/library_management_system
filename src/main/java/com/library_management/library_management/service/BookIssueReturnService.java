@@ -7,11 +7,13 @@ import com.library_management.library_management.model.Book;
 import com.library_management.library_management.model.BookIssueReturn;
 import com.library_management.library_management.model.User;
 import com.library_management.library_management.projection.BookIssueReturnProjection;
+import com.library_management.library_management.response.BookIssueActionRequest;
 import com.library_management.library_management.utility.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -44,10 +46,10 @@ public class BookIssueReturnService {
                 throw new Exception("Given Book is not found");
             }
             Optional<User> existingUser = userDao.findById(userId);
-            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookId,userId);
-            if(existingIssueBook.isPresent()){
-                throw new Exception("This book is already in pending request");
-            }
+//            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookId,userId);
+//            if(existingIssueBook.isPresent()){
+//                throw new Exception("This book is already in pending request");
+//            }
             BookIssueReturn bookIssueReturn = new BookIssueReturn();
             bookIssueReturn.setBook(existingBook.get());
             bookIssueReturn.setUser(existingUser.get());
@@ -67,12 +69,9 @@ public class BookIssueReturnService {
         ApiResponse<List<BookIssueReturn>> response = new ApiResponse<>();
         try{
             Optional<User> existingUser = userDao.findById(userId);
+            List<BookIssueReturn> allReq = new ArrayList<>();
             if(status == null || status.isEmpty()){
-                response.setMessage("null");
-//                Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserRequest(userId);
-                Optional<List<BookIssueReturn>> allReq = bookIssueReturnDao.findByUserId(userId);
-
-                response.setData(allReq.orElseThrow(()->new Exception("No Request Found")));
+                allReq = bookIssueReturnDao.findByUserId(userId);
             }
             else{
                 try {
@@ -80,10 +79,9 @@ public class BookIssueReturnService {
                 } catch (Exception e) {
                     throw new Exception("Invalid status");
                 }
-//                Optional<List<BookIssueReturnProjection>> allReq = bookIssueReturnDao.getSingleUserFilterRequest(userId,status.toUpperCase());
-//                response.setData(allReq.orElseThrow(()->new Exception("No Request Found")));
+                allReq = bookIssueReturnDao.findByUserIdAndState(userId,BookIssueReturn.State.valueOf(status.toUpperCase()));
             }
-
+            response.setData(allReq);
             response.setSuccess(true);
             response.setMessage("All Request Fetched");
             return response;
@@ -94,24 +92,25 @@ public class BookIssueReturnService {
         }
     }
 
-    public ApiResponse<List<BookIssueReturnProjection>> getAllRequest(Integer userId,String status){
-        ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
+    public ApiResponse<List<BookIssueReturn>> getAllRequest(Integer userId,String status){
+        ApiResponse<List<BookIssueReturn>> response = new ApiResponse<>();
         try{
-            Optional<User> user = userDao.findById(userId);
-            if(!user.get().getIs_admin()){
-                throw new Exception("You're not Admin");
-            }
-            if(status.equals("")){
-                response.setMessage("null");
-                Optional<List<BookIssueReturnProjection>> allRequest = bookIssueReturnDao.getAllRequest();
-                response.setData(allRequest.orElseThrow(()->new Exception("No Request Found")));
+            status = status.toUpperCase();
+            List<BookIssueReturn> allRequest = new ArrayList<>();
+            if(status == null || status.isEmpty()){
+                allRequest = bookIssueReturnDao.findAll();
             }
             else{
-                Optional<List<BookIssueReturnProjection>> allRequest = bookIssueReturnDao.getFilterRequest(status);
-                response.setData(allRequest.orElseThrow(()->new Exception("No Request Found")));
+                allRequest = bookIssueReturnDao.findByState(BookIssueReturn.State.valueOf(status));
             }
+            response.setData(allRequest);
             response.setSuccess(true);
             response.setMessage("All Request Fetched");
+            return response;
+        }
+        catch (IllegalArgumentException e) {
+            response.setSuccess(false);
+            response.setMessage("Invalid Action...");
             return response;
         }
         catch(Exception e){
@@ -121,14 +120,18 @@ public class BookIssueReturnService {
         }
     }
 
-    public ApiResponse<String> approveRequest(Integer userId,Integer reqId){
+    public ApiResponse<String> bookIssueAction(Integer userId, BookIssueActionRequest bookIssueActionRequest){
         ApiResponse<String> response = new ApiResponse<>();
         try{
             Optional<User> user = userDao.findById(userId);
             if(!user.get().getIs_admin()){
                 throw new Exception("You're not Admin");
             }
-            Optional<BookIssueReturn> existingReq = bookIssueReturnDao.findById(reqId);
+            String action = bookIssueActionRequest.getAction().toUpperCase();
+            if(!action.equals("ACCEPTED") && !action.equals("REJECT")){
+                throw new Exception("Invalid Action");
+            }
+            Optional<BookIssueReturn> existingReq = bookIssueReturnDao.findById(bookIssueActionRequest.getBookIssueId());
             if(!existingReq.isPresent()){
                 throw new Exception("Given request Id is not exist");
             }
@@ -137,12 +140,12 @@ public class BookIssueReturnService {
             }
             Optional<User> currAdmin = userDao.findById(userId);
             existingReq.get().setAdmin(currAdmin.get());
-            existingReq.get().setState(BookIssueReturn.State.ACCEPTED);
+            existingReq.get().setState(BookIssueReturn.State.valueOf(action));
             existingReq.get().setApprovalDate(LocalDate.now());
             existingReq.get().setReturnDate(LocalDate.now().plusDays(10));
             bookIssueReturnDao.save(existingReq.get());
             response.setSuccess(true);
-            response.setMessage("Request Approved");
+            response.setMessage("Action Performed Succesfully...");
             return response;
         }
         catch(Exception e){

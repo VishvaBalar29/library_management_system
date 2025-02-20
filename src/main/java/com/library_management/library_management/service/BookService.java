@@ -36,10 +36,11 @@ public class BookService {
         }
     }
 
-    public ApiResponse<List<BookProjection>> getAllBooks(){
-        ApiResponse<List<BookProjection>> response = new ApiResponse<>();
+    public ApiResponse<List<Book>> getAllBooks(){
+        ApiResponse<List<Book>> response = new ApiResponse<>();
         try{
-            List<BookProjection> allBooks = bookDao.getBooks();
+//            List<BookProjection> allBooks = bookDao.getBooks();
+            List<Book> allBooks = bookDao.findAll();
             response.setSuccess(true);
             response.setMessage("List Of All Books");
             response.setData(allBooks);

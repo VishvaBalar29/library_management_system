@@ -21,7 +21,7 @@ public class Category {
     @NotNull(message = "Category name cat't be NULL")
     private String categoryName;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<Book> books;
+//    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+//    private List<Book> books;
 
 }

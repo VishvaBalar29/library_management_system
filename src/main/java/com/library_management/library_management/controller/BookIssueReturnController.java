@@ -2,6 +2,7 @@ package com.library_management.library_management.controller;
 
 import com.library_management.library_management.model.BookIssueReturn;
 import com.library_management.library_management.projection.BookIssueReturnProjection;
+import com.library_management.library_management.response.BookIssueActionRequest;
 import com.library_management.library_management.service.BookIssueReturnService;
 import com.library_management.library_management.utility.ApiResponse;
 import com.library_management.library_management.utility.UserInfo;
@@ -19,8 +20,6 @@ public class BookIssueReturnController {
 
     @Autowired
     BookIssueReturnService bookIssueReturnService;
-
-
 
     @GetMapping("/issueBook/{bookId}")
     public ResponseEntity<ApiResponse<String>> issueBook(HttpServletRequest request , @PathVariable Integer bookId){
@@ -59,34 +58,44 @@ public class BookIssueReturnController {
     }
 
 
-    @GetMapping("/admin/allRequest")
-    public ResponseEntity<ApiResponse<List<BookIssueReturnProjection>>> getAllPendingRequest(HttpServletRequest request,@RequestParam(required = false) String status){
-        ApiResponse<List<BookIssueReturnProjection>> response = new ApiResponse<>();
+    @GetMapping("/allRequest")
+    public ResponseEntity<ApiResponse<List<BookIssueReturn>>> getAllPendingRequest(HttpServletRequest request,@RequestParam(required = false) String status){
+        ApiResponse<List<BookIssueReturn>> response = new ApiResponse<>();
         try{
             UserInfo userInfo = (UserInfo) request.getAttribute("userData");
+            if(!userInfo.is_admin()){
+                throw new Exception("You're not an Admin");
+            }
             response = bookIssueReturnService.getAllRequest(userInfo.getUserId(),status);
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());
             }
             return new ResponseEntity<>(response,HttpStatus.OK);
         } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
             return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
         }
     }
 
 
-    @PatchMapping("/admin/approveRequest/{reqId}")
-    public ResponseEntity<ApiResponse<String>> approveRequest(HttpServletRequest httpServletRequest,@PathVariable Integer reqId){
+    @PatchMapping("/issue-action")
+    public ResponseEntity<ApiResponse<String>> bookIssueAction(HttpServletRequest httpServletRequest, @RequestBody BookIssueActionRequest bookIssueActionRequest)   {
         ApiResponse<String> response = new ApiResponse<>();
         try{
             UserInfo userInfo = (UserInfo) httpServletRequest.getAttribute("userData");
-            response = bookIssueReturnService.approveRequest(userInfo.getUserId(), reqId);
+            if(!userInfo.is_admin()){
+                throw new Exception("You're not an Admin");
+            }
+            response = bookIssueReturnService.bookIssueAction(userInfo.getUserId(), bookIssueActionRequest);
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());
             }
             return new ResponseEntity<>(response,HttpStatus.OK);
         }
         catch(Exception e){
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
             return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
         }
     }

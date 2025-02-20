@@ -21,11 +21,11 @@ public class BookIssueReturn {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "bookId",nullable = false)
+    @JoinColumn(name = "book_id",nullable = false)
     private Book book;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne

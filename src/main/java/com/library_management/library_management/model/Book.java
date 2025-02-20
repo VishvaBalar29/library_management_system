@@ -19,6 +19,9 @@ public class Book {
     @NotNull(message = "BookName can't be null")
     private String bookName;
 
+    private Boolean is_issued = false;
+    private int price;
+
     @ManyToOne
     @JoinColumn(name="catId",nullable = false)
     private Category category;

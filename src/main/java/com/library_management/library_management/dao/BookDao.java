@@ -18,7 +18,4 @@ public interface BookDao extends JpaRepository<Book, Integer> {
 //    category.catId: The catId field is part of the Category entity, so you access it through the category field using the underscore _ syntax (category_CatId).
     Optional<List<Book>> findByCategory_catId(Integer id);
 
-
-    @Query(value = "SELECT book_id as BookId,book_name as BookName,cat_id as CatId FROM book",nativeQuery = true)
-    List<BookProjection> getBooks();
 }

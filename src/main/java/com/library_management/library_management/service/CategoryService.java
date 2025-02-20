@@ -51,6 +51,10 @@ public class CategoryService {
             if(!existingCategory.isPresent()){
                 throw new Exception("Given Id (category) is not exist");
             }
+            Optional<Category> duplicateCategory = categoryDao.findByCategoryName(category.getCategoryName());
+            if(duplicateCategory.isPresent()){
+                throw new Exception("Given Category is Already exist");
+            }
             existingCategory.get().setCategoryName(category.getCategoryName());
             categoryDao.save(existingCategory.get());
             response.setSuccess(true);
@@ -87,13 +91,13 @@ public class CategoryService {
         }
     }
 
-    public ApiResponse<List<CategoryProjection>> getAllCategory() {
-        ApiResponse<List<CategoryProjection>> response = new ApiResponse<>();
+    public ApiResponse<List<Category>> getAllCategory() {
+        ApiResponse<List<Category>> response = new ApiResponse<>();
         try{
-            Optional<List<CategoryProjection>> categories = categoryDao.getAllCategory();
+            List<Category> categories = categoryDao.findAll();
+            response.setData(categories);
             response.setSuccess(true);
             response.setMessage("All Category successfully fetched");
-            response.setData(categories.orElseThrow(()->new Exception("No categories found")));
             return response;
         }
         catch(Exception e){
@@ -102,4 +106,5 @@ public class CategoryService {
             return response;
         }
     }
+
 }
