@@ -3,6 +3,7 @@ package com.library_management.library_management.controller;
 import com.library_management.library_management.model.BookIssueReturn;
 import com.library_management.library_management.projection.BookIssueReturnProjection;
 import com.library_management.library_management.response.BookIssueActionRequest;
+import com.library_management.library_management.response.BookReturnResponse;
 import com.library_management.library_management.service.BookIssueReturnService;
 import com.library_management.library_management.utility.ApiResponse;
 import com.library_management.library_management.utility.UserInfo;
@@ -100,7 +101,24 @@ public class BookIssueReturnController {
         }
     }
 
-
+    @PostMapping("/return-book")
+    public ResponseEntity<ApiResponse<String>> returnBook(HttpServletRequest httpServletRequest, @RequestBody BookReturnResponse bookReturnResponse){
+        ApiResponse<String> response = new ApiResponse<>();
+        try{
+            UserInfo userInfo = (UserInfo)httpServletRequest.getAttribute("userData");
+            if(!userInfo.is_admin()){
+                throw new Exception("You're not an Admin");
+            }
+            response = bookIssueReturnService.returnBook(bookReturnResponse);
+            if(!response.isSuccess()){
+                throw new Exception(response.getMessage());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+            response.setMessage(e.getMessage());
+            return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        }
+    }
 
 
 

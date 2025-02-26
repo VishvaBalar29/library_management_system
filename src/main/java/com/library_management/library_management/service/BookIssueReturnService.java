@@ -8,6 +8,7 @@ import com.library_management.library_management.model.BookIssueReturn;
 import com.library_management.library_management.model.User;
 import com.library_management.library_management.projection.BookIssueReturnProjection;
 import com.library_management.library_management.response.BookIssueActionRequest;
+import com.library_management.library_management.response.BookReturnResponse;
 import com.library_management.library_management.utility.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,8 @@ public class BookIssueReturnService {
     @Autowired
     UserDao userDao;
 
+
+
     public enum State{
         PENDING,
         REJECT,
@@ -45,11 +48,16 @@ public class BookIssueReturnService {
             if(!existingBook.isPresent()){
                 throw new Exception("Given Book is not found");
             }
+            if(existingBook.get().getIs_issued()){
+                throw new Exception(("Book is already Issued"));
+            }
             Optional<User> existingUser = userDao.findById(userId);
 //            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookId,userId);
 //            if(existingIssueBook.isPresent()){
 //                throw new Exception("This book is already in pending request");
 //            }
+            existingBook.get().setIs_issued(true);
+            bookDao.save(existingBook.get());
             BookIssueReturn bookIssueReturn = new BookIssueReturn();
             bookIssueReturn.setBook(existingBook.get());
             bookIssueReturn.setUser(existingUser.get());
@@ -155,7 +163,17 @@ public class BookIssueReturnService {
         }
     }
 
+    public ApiResponse<String> returnBook(BookReturnResponse bookReturnResponse) {
+        ApiResponse<String> response = new ApiResponse<>();
+        try{
+            return response;
 
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage(e.getMessage());
+            return response;
+        }
+    }
 
 
 
