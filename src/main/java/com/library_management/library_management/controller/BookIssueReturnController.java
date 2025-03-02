@@ -101,7 +101,7 @@ public class BookIssueReturnController {
         }
     }
 
-    @PostMapping("/return-book")
+    @PatchMapping("/return-book")
     public ResponseEntity<ApiResponse<String>> returnBook(HttpServletRequest httpServletRequest, @RequestBody BookReturnResponse bookReturnResponse){
         ApiResponse<String> response = new ApiResponse<>();
         try{
@@ -113,8 +113,8 @@ public class BookIssueReturnController {
             if(!response.isSuccess()){
                 throw new Exception(response.getMessage());
             }
+            return new ResponseEntity<>(response,HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e);
             response.setMessage(e.getMessage());
             return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
         }

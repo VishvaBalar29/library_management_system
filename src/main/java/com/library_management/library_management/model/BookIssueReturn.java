@@ -55,6 +55,9 @@ public class BookIssueReturn {
         RETURN
     }
 
+    @Column(name="charge")
+    private Integer charge;
+
     @PrePersist
     public void setIssueDateBeforePersist() {
         if (issueDate == null) {

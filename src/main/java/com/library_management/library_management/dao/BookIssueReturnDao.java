@@ -15,6 +15,8 @@ public interface BookIssueReturnDao extends JpaRepository<BookIssueReturn, Integ
 
     List<BookIssueReturn> findByState(BookIssueReturn.State state);
 
+    Optional<BookIssueReturn> findByBook(Book book);
+
 //    Optional<BookIssueReturn> findByBookIdAndUserId(Integer bookId,Integer userId);
 
     List<BookIssueReturn> findByUserId(Integer userId);

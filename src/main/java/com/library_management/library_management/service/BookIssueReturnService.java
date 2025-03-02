@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,12 +53,12 @@ public class BookIssueReturnService {
                 throw new Exception(("Book is already Issued"));
             }
             Optional<User> existingUser = userDao.findById(userId);
-//            Optional<BookIssueReturn> existingIssueBook = bookIssueReturnDao.findByBookIdAndUserId(bookId,userId);
-//            if(existingIssueBook.isPresent()){
-//                throw new Exception("This book is already in pending request");
-//            }
-            existingBook.get().setIs_issued(true);
-            bookDao.save(existingBook.get());
+
+            Optional<BookIssueReturn> exisingIssueReq = bookIssueReturnDao.findByBook(existingBook.get());
+            if(exisingIssueReq.isPresent() &&  !exisingIssueReq.get().getState().equals(BookIssueReturn.State.REJECT) && !exisingIssueReq.get().getState().equals(BookIssueReturn.State.RETURN)){
+                throw new Exception("This book is already requested by other user");
+            }
+
             BookIssueReturn bookIssueReturn = new BookIssueReturn();
             bookIssueReturn.setBook(existingBook.get());
             bookIssueReturn.setUser(existingUser.get());
@@ -139,6 +140,8 @@ public class BookIssueReturnService {
             if(!action.equals("ACCEPTED") && !action.equals("REJECT")){
                 throw new Exception("Invalid Action");
             }
+
+
             Optional<BookIssueReturn> existingReq = bookIssueReturnDao.findById(bookIssueActionRequest.getBookIssueId());
             if(!existingReq.isPresent()){
                 throw new Exception("Given request Id is not exist");
@@ -146,12 +149,23 @@ public class BookIssueReturnService {
             if(existingReq.get().getState() != BookIssueReturn.State.PENDING){
                 throw new Exception("Given request is not in PENDING state...");
             }
+
+            // set true or false in issued status in books table
+            Optional<Book> existingBook = bookDao.findById(existingReq.get().getBook().getBookId());
+            if(action.equals("ACCEPTED") || action.equals("accepted")){
+                existingBook.get().setIs_issued(true);
+            }
+            if(action.equals("REJECT") || action.equals("reject")){
+                existingBook.get().setIs_issued(false);
+            }
+            bookDao.save(existingBook.get());
             Optional<User> currAdmin = userDao.findById(userId);
             existingReq.get().setAdmin(currAdmin.get());
             existingReq.get().setState(BookIssueReturn.State.valueOf(action));
             existingReq.get().setApprovalDate(LocalDate.now());
             existingReq.get().setReturnDate(LocalDate.now().plusDays(10));
             bookIssueReturnDao.save(existingReq.get());
+
             response.setSuccess(true);
             response.setMessage("Action Performed Succesfully...");
             return response;
@@ -166,16 +180,44 @@ public class BookIssueReturnService {
     public ApiResponse<String> returnBook(BookReturnResponse bookReturnResponse) {
         ApiResponse<String> response = new ApiResponse<>();
         try{
-            return response;
+            Optional<BookIssueReturn> existingIssuedBook = bookIssueReturnDao.findById(bookReturnResponse.getBookIssueId());
+            if(!existingIssuedBook.isPresent()){
+                throw new Exception("Given Book is not issued");
+            }
 
+            //check book is issued or not
+            if (!existingIssuedBook.get().getState().equals(BookIssueReturn.State.ACCEPTED)) {
+                throw new Exception("Book is not in issued state");
+            }
+
+            // check return date
+            LocalDate currDate = LocalDate.now();
+            LocalDate returnDate = existingIssuedBook.get().getReturnDate();
+            if(currDate.isAfter(returnDate)){
+                Period period = Period.between(returnDate, currDate);
+                int charge = period.getDays() * 100;
+                existingIssuedBook.get().setCharge(charge);
+            }
+            else{
+                existingIssuedBook.get().setCharge(0);
+            }
+            existingIssuedBook.get().setUserReturnDate(currDate);
+            existingIssuedBook.get().setState(BookIssueReturn.State.RETURN);
+            bookIssueReturnDao.save(existingIssuedBook.get());
+
+            // set book issued status false
+            Optional<Book> existingBook = bookDao.findById(existingIssuedBook.get().getBook().getBookId());
+            existingBook.get().setIs_issued(false);
+            bookDao.save(existingBook.get());
+
+            response.setSuccess(true);
+            response.setMessage("Book Returned Successfully...");
+            return response;
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMessage(e.getMessage());
             return response;
         }
     }
-
-
-
 
 }

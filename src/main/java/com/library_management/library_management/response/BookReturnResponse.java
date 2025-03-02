@@ -7,6 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class BookReturnResponse {
     private int bookIssueId;
-    private int charge;
 
 }
